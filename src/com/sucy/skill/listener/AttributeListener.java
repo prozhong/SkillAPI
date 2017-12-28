@@ -34,6 +34,8 @@ import com.sucy.skill.api.player.PlayerData;
 import com.sucy.skill.log.LogType;
 import com.sucy.skill.log.Logger;
 import com.sucy.skill.manager.AttributeManager;
+
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,6 +44,7 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.inventory.Inventory;
 
 import java.util.HashMap;
 
@@ -315,6 +318,10 @@ public class AttributeListener extends SkillAPIListener
     @EventHandler
     public void onClick(InventoryClickEvent event)
     {
+        Inventory inv = event.getInventory();
+        if (inv == null || inv.getTitle() == null) {
+            return;
+        }
         // Class selection
         if (InventoryManager.isMatching(event.getInventory(), MENU_KEY))
         {
@@ -330,7 +337,7 @@ public class AttributeListener extends SkillAPIListener
             // Interact with the skill tree when clicking in the top region
             if (top)
             {
-                if (event.getSlot() < manager.getKeys().size() || event.getCursor() != null)
+                if (event.getSlot() < manager.getKeys().size() || (event.getCursor() != null && event.getCursor().getType() != Material.AIR))
                 {
                     event.setCancelled(true);
 
@@ -350,7 +357,7 @@ public class AttributeListener extends SkillAPIListener
             }
 
             // Do not allow shift clicking items into the inventory
-            else if (event.isShiftClick())
+            else
             {
                 event.setCancelled(true);
             }

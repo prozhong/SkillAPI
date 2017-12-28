@@ -35,11 +35,13 @@ import com.sucy.skill.language.ErrorNodes;
 import com.sucy.skill.manager.AttributeManager;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -62,6 +64,7 @@ public class InventoryTask extends BukkitRunnable
 
     private static HashMap<UUID, AttribBuffs> attribs     = new HashMap<UUID, AttribBuffs>();
     private static HashMap<String, Integer>   tempAttribs = new HashMap<String, Integer>();
+    private final List<Material> blacklistArmor = new LinkedList<>();
 
     /**
      * Task constructor
@@ -81,6 +84,31 @@ public class InventoryTask extends BukkitRunnable
         levelRegex = Pattern.compile(SkillAPI.getSettings().getLoreLevelText() + "[0-9]+");
         classRegex = Pattern.compile(SkillAPI.getSettings().getLoreClassText() + ".+");
         excludeRegex = Pattern.compile(SkillAPI.getSettings().getLoreExcludeText() + ".+");
+
+        blacklistArmor.add(Material.LEATHER_BOOTS);
+        blacklistArmor.add(Material.LEATHER_CHESTPLATE);
+        blacklistArmor.add(Material.LEATHER_HELMET);
+        blacklistArmor.add(Material.LEATHER_LEGGINGS);
+
+        blacklistArmor.add(Material.CHAINMAIL_BOOTS);
+        blacklistArmor.add(Material.CHAINMAIL_CHESTPLATE);
+        blacklistArmor.add(Material.CHAINMAIL_HELMET);
+        blacklistArmor.add(Material.CHAINMAIL_LEGGINGS);
+
+        blacklistArmor.add(Material.IRON_BOOTS);
+        blacklistArmor.add(Material.IRON_CHESTPLATE);
+        blacklistArmor.add(Material.IRON_HELMET);
+        blacklistArmor.add(Material.IRON_LEGGINGS);
+
+        blacklistArmor.add(Material.GOLD_BOOTS);
+        blacklistArmor.add(Material.GOLD_CHESTPLATE);
+        blacklistArmor.add(Material.GOLD_HELMET);
+        blacklistArmor.add(Material.GOLD_LEGGINGS);
+
+        blacklistArmor.add(Material.DIAMOND_BOOTS);
+        blacklistArmor.add(Material.DIAMOND_CHESTPLATE);
+        blacklistArmor.add(Material.DIAMOND_HELMET);
+        blacklistArmor.add(Material.DIAMOND_LEGGINGS);
     }
 
     /**
@@ -137,16 +165,21 @@ public class InventoryTask extends BukkitRunnable
             player.getInventory().setItemInOffHand(null);
         }
 
+        ItemStack mainhand = player.getInventory().getItemInMainHand();
         if (SkillAPI.getSettings().isDropWeapon())
         {
-            if (cannotUse(data, player.getItemInHand()))
+            if (cannotUse(data, mainhand))
             {
-                player.getWorld().dropItem(player.getLocation(), player.getItemInHand());
-                player.setItemInHand(null);
+                player.getWorld().dropItem(player.getLocation(), mainhand);
+                player.getInventory().setItemInMainHand(null);
             }
         }
         else if (SkillAPI.getSettings().isCheckAttributes())
-            cannotUse(data, player.getItemInHand());
+        {
+            if (mainhand != null && !blacklistArmor.contains(mainhand.getType())) {
+                cannotUse(data, mainhand);
+            }
+        }
 
         // Give attributes
         if (SkillAPI.getSettings().isCheckAttributes())
